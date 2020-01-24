@@ -11,12 +11,16 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.SessionAttributes;
+import org.springframework.web.bind.support.SessionStatus;
 
 import com.bolsadeideas.springboot.app.models.dao.IClienteDao;
 import com.bolsadeideas.springboot.app.models.entity.Cliente;
 
 @Controller
+@SessionAttributes("cliente")
 public class ClienteController {
 	
 	@Autowired
@@ -36,15 +40,29 @@ public class ClienteController {
 		model.put("titulo", "Formulario de Cliente");
 		return "form";
 	}
+	@GetMapping("/form/{id}")
+	public String editar(@PathVariable(value="id") long id, Map<String, Object> model) {
+		Cliente cli = null;
+		if(id>0) {
+			cli = clienteDao.findOne(id);
+		}
+		else {
+			return "redirect:listar";
+		}
+		model.put("cliente", cli);
+		model.put("titulo", "Formulario de Cliente");
+		return "form";
+	}
 	
 	@PostMapping("/form")
-	public String guardar(@Valid  Cliente cli, BindingResult result, Model model) {
+	public String guardar(@Valid  Cliente cli, BindingResult result, Model model,SessionStatus sessionStatus) {
 		if(result.hasErrors())
 		{
 			model.addAttribute("titulo", "Formulario de Cliente");
 			return "form";
 		}
 		clienteDao.save(cli);
+		sessionStatus.setComplete();
 		return "redirect:listar";
 	}
 }
