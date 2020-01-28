@@ -6,30 +6,29 @@ import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.bind.support.SessionStatus;
 
-import com.bolsadeideas.springboot.app.models.dao.IClienteDao;
 import com.bolsadeideas.springboot.app.models.entity.Cliente;
+import com.bolsadeideas.springboot.app.models.services.IClienteService;
 
 @Controller
 @SessionAttributes("cliente")
 public class ClienteController {
 	
 	@Autowired
-	private IClienteDao clienteDao;
+	private IClienteService clienteService;
 
 	@GetMapping("/listar")
 	public String listar(Model model) {
 		model.addAttribute("titulo","Listado de Clientes");
-		model.addAttribute("clientes",clienteDao.findAll());
+		model.addAttribute("clientes",clienteService.findAll());
 		return "listar";
 	}
 	
@@ -44,7 +43,7 @@ public class ClienteController {
 	public String editar(@PathVariable(value="id") long id, Map<String, Object> model) {
 		Cliente cli = null;
 		if(id>0) {
-			cli = clienteDao.findOne(id);
+			cli = clienteService.findOne(id);
 		}
 		else {
 			return "redirect:listar";
@@ -61,8 +60,16 @@ public class ClienteController {
 			model.addAttribute("titulo", "Formulario de Cliente");
 			return "form";
 		}
-		clienteDao.save(cli);
+		clienteService.save(cli);
 		sessionStatus.setComplete();
 		return "redirect:listar";
+	}
+	
+	@RequestMapping(value="/eliminar/{id}")
+	public String eliminar(@PathVariable(value="id") long id) {
+		if(id > 0) {
+			clienteService.delete(id);
+		}
+		return "redirect:/listar";
 	}
 }
