@@ -44,6 +44,9 @@ public class Cliente implements Serializable{
 	@NotNull
 	private LocalDate createAt;
 	
+	@Column(name="foto")
+	private String foto;
+	
 	/*@PrePersist
 	public void prePersist() {
 		createAt = LocalDate.now();
