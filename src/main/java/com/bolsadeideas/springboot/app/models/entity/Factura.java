@@ -12,10 +12,11 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.PrePersist;
 import javax.persistence.Table;
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotEmpty;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -23,49 +24,55 @@ import com.sun.istack.NotNull;
 
 import lombok.Data;
 
+
 @Data
 @Entity
-@Table(name="clientes")
-public class Cliente implements Serializable{
-	
+@Table(name="facturas")
+public class Factura implements Serializable{/**
+	 * 
+	 */
 	private static final long serialVersionUID = 1L;
 	
-	
-	public Cliente() {
-		facturas = new ArrayList<Factura>();
-	}
-    
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	
-	@NotEmpty
-	private String nombre;
+	private String descripcion;
 	
-	@NotEmpty
-	private String apellido;
-	
-	@NotEmpty
-	@Email
-	private String email;
+	private String observacion;
 	
 	@Column(name="create_at")
 	@DateTimeFormat(pattern="yyyy-MM-dd")
 	@NotNull
 	private LocalDate createAt;
 	
-	@Column(name="foto")
-	private String foto;
+	@ManyToOne(fetch = FetchType.LAZY)
+	private Cliente cliente; 
 	
-	@OneToMany(mappedBy="cliente", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-	private List<Factura> facturas;	
+	@OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
+	@JoinColumn(name="factura_id")
+	private List<ItemFactura> items;
 	
-	public void addFactura(Factura factura) {
-		facturas.add(factura);
+	
+	public Factura() {
+		this.items =  new ArrayList<ItemFactura>();
 	}
-	/*@PrePersist
+	
+	@PrePersist
 	public void prePersist() {
 		createAt = LocalDate.now();
-	}*/
+	}
 	
+	public void addItemFactura(ItemFactura item) {
+		items.add(item);
+	}
+	
+	public Double getTotal() {
+		return items.stream().mapToDouble(ItemFactura::calcularImporte).sum();
+		
+	}
+	
+	
+	
+
 }
